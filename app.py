@@ -95,7 +95,6 @@
 
 
 
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import random
@@ -136,10 +135,7 @@ def join_game(game_id):
     player_states[game_id]['player2'] = True
     game = games[game_id]
     
-    if game["player1Ready"] and game["player2Ready"]:
-        return jsonify({"message": "Both players are ready. The game can start."})
-    else:
-        return jsonify({"message": "Second player joined the game. Both players need to be ready to start."})
+    return jsonify({"message": "Second player joined the game", "game_state": game})
 
 @app.route('/set_player_ready/<game_id>/<player>', methods=['POST'])
 def set_player_ready(game_id, player):
@@ -148,9 +144,6 @@ def set_player_ready(game_id, player):
 
     if player not in ['player1', 'player2']:
         return jsonify({"error": "Invalid player"}), 400
-
-    if player_states[game_id][player]:
-        return jsonify({"error": f"{player} is already ready"}), 400
 
     player_states[game_id][player] = True
     game = games[game_id]
@@ -166,7 +159,7 @@ def attack(game_id):
         return jsonify({"error": "Game not found"}), 404
 
     game = games[game_id]
-    if not (game['player1Ready'] and game['player2Ready']):
+    if not (player_states[game_id]['player1'] and player_states[game_id]['player2']):
         return jsonify({"error": "Both players need to be ready to start the game"}), 400
 
     data = request.json
@@ -194,7 +187,7 @@ def special_move(game_id):
         return jsonify({"error": "Game not found"}), 404
 
     game = games[game_id]
-    if not (game['player1Ready'] and game['player2Ready']):
+    if not (player_states[game_id]['player1'] and player_states[game_id]['player2']):
         return jsonify({"error": "Both players need to be ready to start the game"}), 400
 
     data = request.json
@@ -221,7 +214,12 @@ def get_game_state(game_id):
     if game_id not in games:
         return jsonify({"error": "Game not found"}), 404
 
-    return jsonify(games[game_id])
+    game = games[game_id]
+    return jsonify({
+        **game,
+        "player1Ready": player_states[game_id]['player1'],
+        "player2Ready": player_states[game_id]['player2']
+    })
 
 @app.route('/restart/<game_id>', methods=['POST'])
 def restart_game(game_id):
