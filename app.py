@@ -94,7 +94,6 @@
 
 
 
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import random
@@ -114,7 +113,7 @@ def create_game():
         "gameOver": False,
         "winner": None,
         "player1Ready": False,
-        "player2Ready": False
+        "player2Ready": False,
     }
 
 @app.route('/create_game', methods=['POST'])
@@ -149,6 +148,8 @@ def set_player_ready(game_id, player):
     game = games[game_id]
 
     if player_states[game_id]['player1'] and player_states[game_id]['player2']:
+        game['gameOver'] = False
+        game['winner'] = None
         return jsonify({"message": "Both players are ready. The game can start."})
     else:
         return jsonify({"message": f"{player} is now ready."})
