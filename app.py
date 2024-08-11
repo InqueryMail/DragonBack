@@ -42,13 +42,13 @@ def attack(game_id):
         game['healthTwo'] = max(game['healthTwo'] - damage, 0)
         if game['healthTwo'] == 0:
             game['gameOver'] = True
-            game['winner'] = 'Player 1'
+            game['winner'] = 'Heet'
     else:
         game['damageTwo'] = damage
         game['healthOne'] = max(game['healthOne'] - damage, 0)
         if game['healthOne'] == 0:
             game['gameOver'] = True
-            game['winner'] = 'Player 2'
+            game['winner'] = 'Himesh'
     return jsonify(game)
 
 @app.route('/special_move/<game_id>', methods=['POST'])
@@ -64,13 +64,13 @@ def special_move(game_id):
         game['healthTwo'] = max(game['healthTwo'] - special_damage, 0)
         if game['healthTwo'] == 0:
             game['gameOver'] = True
-            game['winner'] = 'Player 1'
+            game['winner'] = 'Player 2'
     else:
         game['damageTwo'] = special_damage
         game['healthOne'] = max(game['healthOne'] - special_damage, 0)
         if game['healthOne'] == 0:
             game['gameOver'] = True
-            game['winner'] = 'Player 2'
+            game['winner'] = 'Player 1'
     return jsonify(game)
 
 @app.route('/game_state/<game_id>', methods=['GET'])
@@ -87,4 +87,4 @@ def restart_game(game_id):
     return jsonify(games[game_id])
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
