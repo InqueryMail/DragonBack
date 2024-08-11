@@ -96,7 +96,6 @@
 
 
 
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import random
@@ -130,14 +129,15 @@ def create_game_route():
 def join_game(game_id):
     if game_id not in games:
         return jsonify({"error": "Game not found"}), 404
-    
+
+    if player_states[game_id]['player2']:
+        return jsonify({"error": "Game already has two players"}), 400
+
     player_states[game_id]['player2'] = True
     game = games[game_id]
     
     if game["player1Ready"] and game["player2Ready"]:
         return jsonify({"message": "Both players are ready. The game can start."})
-    elif not game["player1Ready"]:
-        return jsonify({"message": "First player is waiting for the second player to be ready."})
     else:
         return jsonify({"message": "Second player joined the game. Both players need to be ready to start."})
 
@@ -148,6 +148,9 @@ def set_player_ready(game_id, player):
 
     if player not in ['player1', 'player2']:
         return jsonify({"error": "Invalid player"}), 400
+
+    if player_states[game_id][player]:
+        return jsonify({"error": f"{player} is already ready"}), 400
 
     player_states[game_id][player] = True
     game = games[game_id]
@@ -162,10 +165,13 @@ def attack(game_id):
     if game_id not in games:
         return jsonify({"error": "Game not found"}), 404
 
+    game = games[game_id]
+    if not (game['player1Ready'] and game['player2Ready']):
+        return jsonify({"error": "Both players need to be ready to start the game"}), 400
+
     data = request.json
     player = data['player']
     damage = random.randint(1, 5)
-    game = games[game_id]
 
     if player == 'player1':
         game['damageOne'] = damage
@@ -187,10 +193,13 @@ def special_move(game_id):
     if game_id not in games:
         return jsonify({"error": "Game not found"}), 404
 
+    game = games[game_id]
+    if not (game['player1Ready'] and game['player2Ready']):
+        return jsonify({"error": "Both players need to be ready to start the game"}), 400
+
     data = request.json
     player = data['player']
     special_damage = 25
-    game = games[game_id]
 
     if player == 'player1':
         game['damageOne'] = special_damage
