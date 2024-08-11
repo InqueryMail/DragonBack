@@ -97,8 +97,6 @@
 
 
 
-
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import random
@@ -107,7 +105,7 @@ app = Flask(__name__)
 CORS(app)
 
 games = {}
-player_states = {}  # To track player readiness
+player_states = {}
 
 def create_game():
     return {
@@ -132,17 +130,16 @@ def create_game_route():
 def join_game(game_id):
     if game_id not in games:
         return jsonify({"error": "Game not found"}), 404
-
-    # Update player states
+    
     player_states[game_id]['player2'] = True
     game = games[game_id]
     
     if game["player1Ready"] and game["player2Ready"]:
-        return jsonify({"message": "Both players are ready. The game can start.", "game_id": game_id})
+        return jsonify({"message": "Both players are ready. The game can start."})
     elif not game["player1Ready"]:
-        return jsonify({"message": "First player is waiting for the second player to be ready.", "game_id": game_id})
+        return jsonify({"message": "First player is waiting for the second player to be ready."})
     else:
-        return jsonify({"message": "Second player joined the game. Both players need to be ready to start.", "game_id": game_id})
+        return jsonify({"message": "Second player joined the game. Both players need to be ready to start."})
 
 @app.route('/set_player_ready/<game_id>/<player>', methods=['POST'])
 def set_player_ready(game_id, player):
@@ -228,19 +225,6 @@ def restart_game(game_id):
     games[game_id] = create_game()
     player_states[game_id] = {'player1': False, 'player2': False}
     return jsonify(games[game_id])
-
-@app.route('/accept_restart/<game_id>/<player>', methods=['POST'])
-def accept_restart(game_id, player):
-    if game_id not in games:
-        return jsonify({"error": "Game not found"}), 404
-
-    if player not in ['player1', 'player2']:
-        return jsonify({"error": "Invalid player"}), 400
-
-    if games[game_id]['gameOver']:
-        return jsonify({"message": f"{player} accepted the restart request. The game will restart once the other player accepts."})
-
-    return jsonify({"error": "Game is not over yet"}), 400
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
